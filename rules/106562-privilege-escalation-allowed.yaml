@@ -1,0 +1,35 @@
+# KAC default rule 106562: Privilege escalation allowed (Medium)
+# Triggers: securityContext.allowPrivilegeEscalation: true on a container.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106562-privilege-escalation-allowed.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106562
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: true
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

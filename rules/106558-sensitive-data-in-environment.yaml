@@ -1,0 +1,38 @@
+# KAC default rule 106558: Sensitive data in environment (Medium)
+# Triggers: An env var value matches a secret regex (here the AWS documentation example access key, not a real credential).
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106558-sensitive-data-in-environment.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106558
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIAIOSFODNN7EXAMPLE

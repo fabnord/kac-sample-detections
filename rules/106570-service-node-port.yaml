@@ -1,0 +1,19 @@
+# KAC default rule 106570: Service attached to node port (Medium)
+# Triggers: Service spec.type: NodePort.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106570-service-node-port.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kac-106570
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  type: NodePort
+  selector:
+    app: kac-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

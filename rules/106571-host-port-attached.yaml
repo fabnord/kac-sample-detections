@@ -1,0 +1,38 @@
+# KAC default rule 106571: Host port attached to container(s) (Medium)
+# Triggers: A container port sets hostPort.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106571-host-port-attached.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106571
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"
+      ports:
+        - containerPort: 8080
+          hostPort: 8080

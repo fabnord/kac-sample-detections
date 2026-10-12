@@ -1,0 +1,38 @@
+# KAC default rule 106564: Container(s) with unsafe procMount (Medium)
+# Triggers: securityContext.procMount: Unmasked on a container.
+# Note: Needs a cluster with the ProcMountType and UserNamespacesSupport features enabled; Kubernetes requires hostUsers: false with Unmasked.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106564-unsafe-procmount.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106564
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        procMount: Unmasked
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"
+  hostUsers: false

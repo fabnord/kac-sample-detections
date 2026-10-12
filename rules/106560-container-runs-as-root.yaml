@@ -1,0 +1,36 @@
+# KAC default rule 106560: Container(s) run as root (Informational)
+# Triggers: securityContext.runAsUser: 0 on a container.
+# Also triggers: 106561
+# Note: Running as UID 0 necessarily means runAsNonRoot is not enforced.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106560-container-runs-as-root.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106560
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsUser: 0
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

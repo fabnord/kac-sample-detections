@@ -1,0 +1,20 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Local env and credentials
+.env
+.env.*
+*.pem
+*.key
+
+# Scratch output
+*.log
+tmp/

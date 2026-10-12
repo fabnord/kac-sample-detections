@@ -1,0 +1,37 @@
+# KAC default rule 106578: Container(s) with many capabilities (Medium)
+# Triggers: capabilities.drop does not include ALL, so the container keeps the runtime's default capability set.
+# Note: NET_RAW and SYS_ADMIN are dropped so that 106563 and 106568 stay quiet.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106578-container-with-many-capabilities.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106578
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - NET_RAW
+            - SYS_ADMIN
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

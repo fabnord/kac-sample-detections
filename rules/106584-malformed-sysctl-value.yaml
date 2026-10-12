@@ -1,0 +1,40 @@
+# KAC default rule 106584: Malformed sysctl value (Informational)
+# Triggers: A Pod sysctl value contains both + and = (the cr8escape / CVE-2022-0811 injection pattern). The payload here is harmless.
+# Also triggers: 106565
+# Note: Patched container runtimes reject the value at start-up, but KAC flags it at admission.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106584-malformed-sysctl-value.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106584
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+    sysctls:
+      - name: net.ipv4.ip_local_port_range
+        value: "32768 60999+vm.swappiness=60"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

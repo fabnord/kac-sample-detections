@@ -1,0 +1,36 @@
+# KAC default rule 106557: Privileged container(s) (Informational)
+# Triggers: securityContext.privileged: true on a container.
+# Note: allowPrivilegeEscalation is omitted because Kubernetes rejects privileged: true with allowPrivilegeEscalation: false.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106557-privileged-container.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106557
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        capabilities:
+          drop:
+            - ALL
+        privileged: true
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

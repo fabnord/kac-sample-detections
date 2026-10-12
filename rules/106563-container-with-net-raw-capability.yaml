@@ -1,0 +1,37 @@
+# KAC default rule 106563: Container(s) with network capabilities (Medium)
+# Triggers: CAP_NET_RAW is not dropped (capabilities.drop lists neither ALL nor NET_RAW).
+# Also triggers: 106578
+# Note: SYS_ADMIN is dropped so that 106568 stays quiet.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106563-container-with-net-raw-capability.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106563
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - SYS_ADMIN
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

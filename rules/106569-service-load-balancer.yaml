@@ -1,0 +1,20 @@
+# KAC default rule 106569: Service attached to load balancer (Medium)
+# Triggers: Service spec.type: LoadBalancer.
+# Note: Creates a cloud load balancer if admitted; delete it after the demo.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106569-service-load-balancer.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kac-106569
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  type: LoadBalancer
+  selector:
+    app: kac-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

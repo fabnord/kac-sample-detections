@@ -1,0 +1,39 @@
+# KAC default rule 106565: Container(s) using unsafe sysctls (Medium)
+# Triggers: Pod securityContext.sysctls includes a name starting with net., kernel.shm, kernel.msg, kernel.sem or fs.mqueue.
+# Note: net.ipv4.ip_local_port_range is allowed by the kubelet by default, so the Pod is admitted without special node flags.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106565-unsafe-sysctls.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106565
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+    sysctls:
+      - name: net.ipv4.ip_local_port_range
+        value: "32768 60999"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

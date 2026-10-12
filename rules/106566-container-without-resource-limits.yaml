@@ -1,0 +1,31 @@
+# KAC default rule 106566: Container(s) without resource limits (Medium)
+# Triggers: The container does not set both resources.limits.cpu and resources.limits.memory.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106566-container-without-resource-limits.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106566
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL

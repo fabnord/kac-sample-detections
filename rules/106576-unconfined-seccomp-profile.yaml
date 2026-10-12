@@ -1,0 +1,39 @@
+# KAC default rule 106576: Workload with unconfined seccomp profile (Medium)
+# Triggers: seccompProfile.type: Unconfined on a container.
+# Also triggers: 106579
+# Note: Anything other than RuntimeDefault also violates 106579.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106576-unconfined-seccomp-profile.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106576
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+    seLinuxOptions:
+      level: "s0:c123,c456"
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: Unconfined
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

@@ -1,0 +1,25 @@
+# KAC default rule 106580: Workload without securityContext (Medium)
+# Triggers: Neither the Pod nor the container defines a securityContext.
+# Also triggers: 106561, 106563, 106568, 106577, 106578, 106579
+# Note: With no securityContext at all, every securityContext-based check fails too.
+# Apply: kubectl apply -f namespace.yaml && kubectl apply -f rules/106580-no-security-context.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kac-106580
+  namespace: kac-demo
+  labels:
+    app: kac-demo
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - name: app
+      image: busybox:1.37
+      command:
+        - sleep
+        - "3600"
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "64Mi"

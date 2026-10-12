@@ -1,0 +1,5 @@
+# Namespace used by every sample manifest except 106575.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kac-demo
